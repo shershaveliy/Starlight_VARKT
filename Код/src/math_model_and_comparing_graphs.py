@@ -13,7 +13,7 @@ A = 10.0  # Площадь поперечного сечения ракеты, m
 
 # Масса и характеристики ступеней
 stages = [
-    {"wet_mass": 59410 + 15600, "fuel_mass": 46779, "thrust": 1_410_000, "burn_time": 105, "ejection_force": 200},
+    {"wet_mass": 75010, "fuel_mass": 46779, "thrust": 1_410_000, "burn_time": 105, "ejection_force": 200},
     {"wet_mass": 36672, "fuel_mass": 12400, "thrust": 470_000, "burn_time": 83, "ejection_force": 250},
 ]
 
