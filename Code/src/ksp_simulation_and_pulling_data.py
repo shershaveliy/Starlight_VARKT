@@ -16,14 +16,6 @@ with open(PATH, mode='w', newline='') as file:
     writer.writerow(["Time", "Altitude", "Vertical Velocity", "Horizontal Velocity",
                      "Total Velocity", "Drag", "Displacement"])
 
-    # Счетчик времени
-    start_time = conn.space_center.ut
-
-    # Начальная позиция для расчета смещения
-    initial_position = vessel.position(vessel.orbit.body.reference_frame)
-    # Длина вектора
-    initial_position_vec_length = np.linalg.norm(initial_position)
-    
     # Подготовка к запуску
     vessel.control.sas = False
     vessel.control.rcs = False
@@ -35,12 +27,19 @@ with open(PATH, mode='w', newline='') as file:
     vessel.control.activate_next_stage()  # Освобождение от стартовых клемм
     time.sleep(0.7)
     
+    # Счетчик времени
+    start_time = conn.space_center.ut
+
+    # Начальная позиция для расчета смещения
+    initial_position = vessel.position(vessel.orbit.body.reference_frame)
+    # Длина вектора
+    initial_position_vec_length = np.linalg.norm(initial_position)
+    
     stage_main_engines = ['', 'R7 B V G D Engine Cluster', 'R7 Block A Engine', 'R7 Block I']
     stage = 1
     
     # Основной цикл полета
     while True:
-        
         # Настоящее время
         ut = conn.space_center.ut
         

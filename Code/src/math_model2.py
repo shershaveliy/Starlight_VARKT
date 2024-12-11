@@ -123,6 +123,8 @@ vertical_velocity_data_ksp = data['Vertical Velocity']
 horizontal_velocity_data_ksp = data['Horizontal Velocity']
 displacement_data_ksp = data['Displacement']
 
+
+
 # Построение графиков
 plt.figure(figsize=(15, 10))
 
