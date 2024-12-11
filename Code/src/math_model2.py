@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp, odeint
 import pandas as pd
 
+import pathlib
+
+
+
 # Константы
 g = 9.81  # ускорение свободного падения (м/с²)
 rho_0 = 1.225  # плотность воздуха на уровне моря (кг/м³)
@@ -110,7 +114,8 @@ y_coords = np.concatenate([result_first_stage[:, 2], result_second_stage[:, 2]])
 vertical_velocities = np.concatenate([result_first_stage[:, 3], result_second_stage[:, 3]])
 
 # Получение данных из симуляции KSP
-data = pd.read_csv('src/ksp_flight_data_existing.csv')
+PATH = str(pathlib.Path().resolve().joinpath("ksp_flight_data.csv"))
+data = pd.read_csv(PATH)
 
 time_data_ksp = data['Time']
 altitude_data_ksp = data['Altitude']
@@ -157,5 +162,6 @@ plt.xlabel('Время (с)')
 plt.ylabel('Смещение по X (м)')
 plt.legend()
 
-plt.tight_layout()
+plt.tight_layout(pad=1.5)
+plt.savefig("final.png")
 plt.show()

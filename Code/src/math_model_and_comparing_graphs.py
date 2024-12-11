@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 import pandas as pd
+import pathlib
 
 # Константы
 g = 9.81  # ускорение свободного падения (м/с²)
@@ -51,7 +52,10 @@ time = 0
 mass = 111_683
 
 # Открываем файл для записи данных
-with open('src/flight_data.csv', mode='w', newline='') as file:
+PATH = str(pathlib.Path().resolve().joinpath("flight_data.csv"))
+KSP_PATH = str(pathlib.Path().resolve().joinpath("ksp_flight_data_existing.csv"))
+
+with open(PATH, mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(["Time", "Altitude", "Vertical Velocity", "Horizontal Velocity",
                      "Total Velocity", "Drag", "Displacement"])
@@ -129,7 +133,7 @@ with open('src/flight_data.csv', mode='w', newline='') as file:
         mass -= dry_mass
 
 # Получения данных по мат модели
-data = pd.read_csv('src/flight_data.csv')
+data = pd.read_csv(PATH)
 
 time_data = data['Time']
 altitude_data = data['Altitude']
@@ -141,7 +145,7 @@ displacement_data = data['Displacement']
 
 
 # Получение данных из симуляции KSP
-data = pd.read_csv('src/ksp_flight_data_existing.csv')
+data = pd.read_csv(KSP_PATH)
 
 time_data_ksp = data['Time']
 altitude_data_ksp = data['Altitude']

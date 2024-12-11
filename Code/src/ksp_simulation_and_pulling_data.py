@@ -3,13 +3,15 @@ import time
 import csv
 from math import sqrt
 import numpy as np
+import pathlib
 
 # Подключаемся к игре
 conn = krpc.connect(name='Автопилот Венера-7')
 vessel = conn.space_center.active_vessel
 
 # Создаем файл для записи данных
-with open('src/ksp_flight_data.csv', mode='w', newline='') as file:
+PATH = str(pathlib.Path().resolve().joinpath("ksp_flight_data.csv"))
+with open(PATH, mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(["Time", "Altitude", "Vertical Velocity", "Horizontal Velocity",
                      "Total Velocity", "Drag", "Displacement"])
