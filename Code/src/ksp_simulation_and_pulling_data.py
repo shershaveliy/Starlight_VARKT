@@ -10,7 +10,7 @@ conn = krpc.connect(name='Автопилот Венера-7')
 vessel = conn.space_center.active_vessel
 
 # Создаем файл для записи данных
-PATH = str(pathlib.Path().resolve().joinpath("ksp_flight_data.csv"))
+PATH = str(pathlib.Path(__file__).parent.joinpath("ksp_flight_data.csv"))
 with open(PATH, mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(["Time", "Altitude", "Vertical Velocity", "Horizontal Velocity",

@@ -52,8 +52,8 @@ time = 0
 mass = 111_683
 
 # Открываем файл для записи данных
-PATH = str(pathlib.Path().resolve().joinpath("flight_data.csv"))
-KSP_PATH = str(pathlib.Path().resolve().joinpath("ksp_flight_data_existing.csv"))
+PATH = str(pathlib.Path(__file__).parent.joinpath("flight_data.csv"))
+KSP_PATH = str(pathlib.Path(__file__).parent.joinpath("ksp_flight_data_existing.csv"))
 
 with open(PATH, mode='w', newline='') as file:
     writer = csv.writer(file)

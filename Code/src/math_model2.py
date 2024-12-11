@@ -114,7 +114,7 @@ y_coords = np.concatenate([result_first_stage[:, 2], result_second_stage[:, 2]])
 y_velocities = np.concatenate([result_first_stage[:, 3], result_second_stage[:, 3]])
 
 # Получение данных из симуляции KSP
-PATH = str(pathlib.Path().resolve().joinpath("ksp_flight_data.csv"))
+PATH = str(pathlib.Path(__file__).parent.joinpath("ksp_flight_data.csv"))
 data = pd.read_csv(PATH)
 
 time_ksp = data['Time']
