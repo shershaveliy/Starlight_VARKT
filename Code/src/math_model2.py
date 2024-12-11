@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.integrate import solve_ivp, odeint
+from scipy.integrate import odeint
 import pandas as pd
 
 import pathlib
@@ -109,29 +109,104 @@ time_second_stage = time_eval
 # Объединение результатов
 time = np.concatenate([time_first_stage, time_first_stage[-1] + time_second_stage])
 x_coords = np.concatenate([result_first_stage[:, 0], result_second_stage[:, 0]])
-horizontal_velocities = np.concatenate([result_first_stage[:, 1], result_second_stage[:, 1]])
+x_velocities = np.concatenate([result_first_stage[:, 1], result_second_stage[:, 1]])
 y_coords = np.concatenate([result_first_stage[:, 2], result_second_stage[:, 2]])
-vertical_velocities = np.concatenate([result_first_stage[:, 3], result_second_stage[:, 3]])
+y_velocities = np.concatenate([result_first_stage[:, 3], result_second_stage[:, 3]])
 
 # Получение данных из симуляции KSP
 PATH = str(pathlib.Path().resolve().joinpath("ksp_flight_data.csv"))
 data = pd.read_csv(PATH)
 
-time_data_ksp = data['Time']
-altitude_data_ksp = data['Altitude']
-vertical_velocity_data_ksp = data['Vertical Velocity']
-horizontal_velocity_data_ksp = data['Horizontal Velocity']
-displacement_data_ksp = data['Displacement']
+time_ksp = data['Time']
+x_coords_ksp = data['Displacement']
+x_velocities_ksp = data['Horizontal Velocity']
+y_coords_ksp = data['Altitude']
+y_velocities_ksp = data['Vertical Velocity']
+
+i = 0
+while time_ksp[0] > time[i]:
+    i += 1
+
+time = time[i:]
+x_coords = x_coords[i:]
+x_velocities = x_velocities[i:]
+y_coords = y_coords[i:]
+y_velocities = y_velocities[i:]
 
 
+# утилиты
+
+def remap(v, x, y, a, b):
+    return (v - x) / (y - x) * (b - a) + a
+
+def lerp(t, a, b):
+    return a + (b - a) * (1 - t)
+
+assert remap(1, 0, 2, 0, 10) == 5
+assert lerp(0.5, 0, 2) == 1
+
+# интерполяция данных
+time_remap = []
+x_coords_remap = []
+x_velocities_remap = []
+y_coords_remap = []
+y_velocities_remap = []
+
+idx_ksp = 0
+for idx in range(0, len(time) - 1):
+    ran_out = False
+    while time_ksp[idx_ksp + 1] < time[idx]:
+        idx_ksp += 1
+        if idx_ksp >= len(time_ksp) - 1:
+            ran_out = True
+            break
+    
+    if ran_out:
+        break
+
+    dt = remap(time[idx], time_ksp[idx_ksp], time_ksp[idx_ksp + 1], 0, 1)
+    
+    x_coord = lerp(dt, x_coords_ksp[idx_ksp], x_coords_ksp[idx_ksp + 1])
+    x_velocity = lerp(dt, x_velocities_ksp[idx_ksp], x_velocities_ksp[idx_ksp + 1])
+    y_coord = lerp(dt, y_coords_ksp[idx_ksp], y_coords_ksp[idx_ksp + 1])
+    y_velocity = lerp(dt, y_velocities_ksp[idx_ksp], y_velocities_ksp[idx_ksp + 1])
+    
+    time_remap.append(time[idx])
+    x_coords_remap.append(x_coord)
+    x_velocities_remap.append(x_velocity)
+    y_coords_remap.append(y_coord)
+    y_velocities_remap.append(y_velocity)
+
+# Вычисление значений погрешностей
+
+def abs_error(values):
+    return abs(values[1] - values[0])
+
+def rel_error(values):
+    if values[0] < 1:
+        res = abs_error(values) * 100
+    else:
+        res = abs_error(values) * 100 / values[0]
+    return max(min(res, 100), -100)
+
+y_velocities_abs_error = list(map(abs_error, zip(y_velocities, y_velocities_remap)))
+y_coords_abs_error = list(map(abs_error, zip(y_coords, y_coords_remap)))
+x_velocities_abs_error = list(map(abs_error, zip(x_velocities, x_velocities_remap)))
+x_coords_abs_error = list(map(abs_error, zip(x_coords, x_coords_remap)))
+
+y_velocities_rel_error = list(map(rel_error, zip(y_velocities, y_velocities_remap)))
+y_coords_rel_error = list(map(rel_error, zip(y_coords, y_coords_remap)))
+x_velocities_rel_error = list(map(rel_error, zip(x_velocities, x_velocities_remap)))
+x_coords_rel_error = list(map(rel_error, zip(x_coords, x_coords_remap)))
 
 # Построение графиков
 plt.figure(figsize=(15, 10))
 
 # График высоты
 plt.subplot(3, 2, 1)
+plt.plot(time_remap, y_coords_abs_error, label='Погрешность',color='red')
 plt.plot(time, y_coords, label='Высота', color='blue')
-plt.plot(time_data_ksp, altitude_data_ksp, label='Высота KSP', color='orange')
+plt.plot(time_remap, y_coords_remap, label='Высота KSP', color='orange')
 plt.title('Высота от времени')
 plt.xlabel('Время (с)')
 plt.ylabel('Высота (м)')
@@ -139,29 +214,43 @@ plt.legend()
 
 # График вертикальной скорости
 plt.subplot(3, 2, 2)
-plt.plot(time, vertical_velocities, label='Скорость по вертикали', color='blue')
-plt.plot(time_data_ksp, vertical_velocity_data_ksp, label='Скорость по вертикали KSP', color='orange')
+plt.plot(time_remap, y_velocities_abs_error, label='Погрешность',color='red')
+plt.plot(time, y_velocities, label='Скорость по вертикали', color='blue')
+plt.plot(time_remap, y_velocities_remap, label='Скорость по вертикали KSP', color='orange')
 plt.title('Скорость по вертикали от времени')
 plt.xlabel('Время (с)')
 plt.ylabel('Скорость (м/с)')
 plt.legend()
 
-# График горизонтальной скорости
+# График смещения
 plt.subplot(3, 2, 3)
-plt.plot(time, horizontal_velocities, label='Скорость по горизонтали', color='blue')
-plt.plot(time_data_ksp, horizontal_velocity_data_ksp, label='Скорость по горизонтали KSP', color='orange')
+plt.plot(time_remap, x_coords_abs_error, label='Погрешность',color='red')
+plt.plot(time, x_coords, label='Смещение по горизонтали', color='blue')
+plt.plot(time_ksp, x_coords_ksp, label='Смещение по горизонтали KSP',color='orange')
+plt.title('Смещение по горизонтали от времени')
+plt.xlabel('Время (с)')
+plt.ylabel('Смещение по X (м)')
+plt.legend()
+
+# График горизонтальной скорости
+plt.subplot(3, 2, 4)
+plt.plot(time_remap, x_velocities_abs_error, label='Погрешность',color='red')
+plt.plot(time, x_velocities, label='Скорость по горизонтали', color='blue')
+plt.plot(time_ksp, x_velocities_ksp, label='Скорость по горизонтали KSP', color='orange')
 plt.title('Скорость по горизонтали от времени')
 plt.xlabel('Время (с)')
 plt.ylabel('Скорость (м/с)')
 plt.legend()
 
-# График смещения
-plt.subplot(3, 2, 4)
-plt.plot(time, x_coords, label='Смещение по горизонтали', color='blue')
-plt.plot(time_data_ksp, displacement_data_ksp, label='Смещение по горизонтали KSP',color='orange')
-plt.title('Смещение по горизонтали от времени')
+# График относительных погрешностей
+plt.subplot(3, 2, 5)
+plt.plot(time_remap, y_coords_rel_error, label='Высота', color='blue')
+plt.plot(time_remap, y_velocities_rel_error, label='Скорость по вертикали',color='orange')
+plt.plot(time_remap, x_coords_rel_error, label='Смещение по горизонтали', color='red')
+plt.plot(time_remap, x_velocities_rel_error, label='Скорость по горизонтали',color='green')
+plt.title('Относительные погрешности')
 plt.xlabel('Время (с)')
-plt.ylabel('Смещение по X (м)')
+plt.ylabel('Погрешность (%)')
 plt.legend()
 
 plt.tight_layout(pad=1.5)

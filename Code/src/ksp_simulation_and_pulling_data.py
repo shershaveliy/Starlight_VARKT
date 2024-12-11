@@ -21,11 +21,12 @@ with open(PATH, mode='w', newline='') as file:
     vessel.control.rcs = False
     vessel.control.throttle = 1.0
     
-    print('Запуск через 3...2...1...')
-    vessel.control.activate_next_stage()  # Запуск двигателей первой ступени
-    time.sleep(0.3)
-    vessel.control.activate_next_stage()  # Освобождение от стартовых клемм
-    time.sleep(0.7)
+    print('Запуск через 3...')
+    time.sleep(1)
+    print('2...')
+    time.sleep(1)
+    print('1...')
+    time.sleep(1)
     
     # Счетчик времени
     start_time = conn.space_center.ut
@@ -35,8 +36,15 @@ with open(PATH, mode='w', newline='') as file:
     # Длина вектора
     initial_position_vec_length = np.linalg.norm(initial_position)
     
+    vessel.control.activate_next_stage()  # Запуск двигателей первой ступени
+    time.sleep(0.3)
+    vessel.control.activate_next_stage()  # Освобождение от стартовых клемм
+    time.sleep(0.7)
+    
     stage_main_engines = ['', 'R7 B V G D Engine Cluster', 'R7 Block A Engine', 'R7 Block I']
     stage = 1
+    
+    print(f"Пуск!\nВремя старта: {start_time:.2f} с")
     
     # Основной цикл полета
     while True:
